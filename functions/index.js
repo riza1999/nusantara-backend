@@ -42,6 +42,34 @@ api.post('/login', async (req,res) => {
    })
 })
 
+api.post('/register', async(req,res) => {
+    // const lengthUser = await db.collection("ms_user").get().size;
+    let {image,nama,username,password} = req.body;
+    data = {
+        image: image,
+        nama: nama,
+        username: username,
+        password: password
+    }
+
+    const snapshot = await db.collection("ms_user").where('username','==',username).get();
+    if(snapshot.empty){
+        const reg = await db.collection("ms_user").add(data);
+
+        if (reg) {
+            res.json({
+                success: true,
+                status: 'Berhasil membuat akun'
+            })
+        }
+    }else{
+        res.json({
+            success: false,
+            status: 'Username telah dipakai, coba gunakan username yang lain'
+        })
+    }
+})
+
 api.get('/getKategori', async (req,res) =>{
     const snapshotKategori = await db.collection("ms_kategori").get();
     let kirim = [];
