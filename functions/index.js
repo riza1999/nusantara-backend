@@ -35,10 +35,31 @@ api.post('/login', async (req,res) => {
 
         res.json({
             success: true,
+            uid: uid,
             nama: nama,
             username: username
         })
    })
+})
+
+api.get('/getKategori', async (req,res) =>{
+    const snapshotKategori = await db.collection("ms_kategori").get();
+    let kirim = [];
+    let lengthKategori = snapshotKategori.size;
+    let ctr = 0;    
+    snapshotKategori.forEach(async doc =>{
+        let hasil = doc.data();
+        const kategoriRef = db.collection('ms_kategori').doc(doc.id);
+        const snapshotSoal = await db.collection("ms_soal").where('id_kategori','==', kategoriRef).get();
+        let lengthSoal = snapshotSoal.size;
+        kirim.push({
+            nama_kategori: hasil.nama,
+            jumlah_soal: lengthSoal,
+            kategori_id: doc.id
+        })
+        ctr++;
+        if(lengthKategori == ctr) res.json(kirim);
+    })
 })
 
 exports.api = functions.https.onRequest(api);
