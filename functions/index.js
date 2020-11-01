@@ -70,6 +70,33 @@ api.post('/register', async(req,res) => {
     }
 })
 
+api.post('/getTotalScore', async (req,res) => {
+    let {uid} = req.body;
+
+    const userRef = db.collection('ms_user').doc(uid);
+    const snapshot = await db.collection("tr_soal").where('id_user', '==', userRef).get();
+
+    if(snapshot.empty){
+        res.json({
+            total_reward: 0
+        })
+    }else{
+        let lengthTRSoal = snapshot.size;
+        let ctr = 0;   
+        let total_reward = 0;
+        snapshot.forEach(doc =>{
+            let tr_soal = doc.data();
+            let {reward} = tr_soal;
+            
+            total_reward += reward;
+            ctr++;
+            if(lengthTRSoal == ctr) res.json({
+                total_reward: total_reward
+            });
+       })
+    }
+})
+
 api.get('/getKategori', async (req,res) =>{
     const snapshotKategori = await db.collection("ms_kategori").get();
     let kirim = [];
