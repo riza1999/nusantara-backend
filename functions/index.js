@@ -12,6 +12,19 @@ api.use(cors);
 api.use(bodyParser.json());
 api.use(bodyParser.urlencoded({ extended: true }));
 
+function compare(a, b) {
+    const testA = a.total_reward;
+    const testB = b.total_reward;
+
+    let comparison = 0;
+    if (testA > testB) {
+        comparison = -1;
+    } else if (testA < testB) {
+        comparison = 1;
+    }
+    return comparison;
+}
+
 api.post('/login', async (req,res) => {
    let {username,password} = req.body;
 
@@ -104,16 +117,58 @@ api.get('/getKategori', async (req,res) =>{
     let ctr = 0;    
     snapshotKategori.forEach(async doc =>{
         let hasil = doc.data();
+        let is_done = false;
         const kategoriRef = db.collection('ms_kategori').doc(doc.id);
         const snapshotSoal = await db.collection("ms_soal").where('id_kategori','==', kategoriRef).get();
         let lengthSoal = snapshotSoal.size;
         kirim.push({
             nama_kategori: hasil.nama,
             jumlah_soal: lengthSoal,
-            kategori_id: doc.id
+            kategori_id: doc.id,
+            is_done: is_done
         })
         ctr++;
         if(lengthKategori == ctr) res.json(kirim);
+    })
+})
+
+api.get('/getLeaderboard', async (req,res) =>{
+    const snapshotUser = await db.collection("ms_user").get();
+    let kirim = [];
+    let lengthUser = snapshotUser.size;
+    let ctr_user = 0;    
+    snapshotUser.forEach(async doc =>{
+        let uid = doc.id;
+        let hasil = doc.data();
+        const userRef = db.collection('ms_user').doc(uid);
+        const snapshot = await db.collection("tr_soal").where('id_user', '==', userRef).get();
+
+        if(snapshot.empty){
+            kirim.push({
+                username: hasil.nama,
+                total_reward: 0
+            })
+        }else{
+            let lengthTRSoal = snapshot.size;
+            let ctr = 0;   
+            let total_reward = 0;
+            snapshot.forEach(doc =>{
+                let tr_soal = doc.data();
+                let {reward} = tr_soal;
+                
+                total_reward += reward;
+                ctr++;
+                if(lengthTRSoal == ctr) {
+                    kirim.push({
+                        username: hasil.nama,
+                        total_reward: total_reward
+                    })
+                }
+           })
+        }
+        ctr_user++;
+        kirim.sort(compare);
+        if(lengthUser == ctr_user) res.json(kirim);
     })
 })
 
