@@ -25,6 +25,19 @@ function compare(a, b) {
     return comparison;
 }
 
+function compareOrdering(a, b) {
+    const testA = a.ordering;
+    const testB = b.ordering;
+
+    let comparison = 0;
+    if (testA > testB) {
+        comparison = 1;
+    } else if (testA < testB) {
+        comparison = -1;
+    }
+    return comparison;
+}
+
 api.post('/login', async (req,res) => {
    let {username,password} = req.body;
 
@@ -108,6 +121,48 @@ api.post('/getTotalScore', async (req,res) => {
             });
        })
     }
+})
+
+api.post('/getSoalPerkategori', async (req,res) => {
+    let {uid,id_kategori} = req.body;
+    let kirim = [];
+    
+    const userRef = db.collection('ms_user').doc(uid)
+    const kategoriRef = db.collection('ms_kategori').doc(id_kategori);
+    const snapshotSoal = await db.collection("ms_soal").where('id_kategori','==', kategoriRef).get();
+
+    let lengthSoal = snapshotSoal.size;
+    let ctr = 0;    
+    snapshotSoal.forEach(async doc => {
+        let hasil = doc.data();
+        let is_done = false;
+        let soalRef = db.collection('ms_soal').doc(doc.id);
+
+        const snapshotTRSoal = await db.collection("tr_soal").where('id_user', '==', userRef).where('id_soal','==',soalRef).get();
+        if(snapshotTRSoal.empty){
+            kirim.push({
+                judul: 'soal ' + hasil.ordering,
+                id_soal: doc.id,
+                is_done: is_done,
+                ordering: hasil.ordering
+            })
+        }else{
+            snapshotTRSoal.forEach(async doc => {
+                let hasilTRSoal = doc.data();
+                is_done = true;
+                kirim.push({
+                    judul: 'soal ' + hasil.ordering,
+                    id_soal: doc.id,
+                    is_done: is_done,
+                    is_right: hasilTRSoal.is_right,
+                    ordering: hasil.ordering
+                })
+            })
+        }
+        ctr++;
+        kirim.sort(compareOrdering);
+        if(lengthSoal == ctr) res.json(kirim);
+    })
 })
 
 api.get('/getKategori', async (req,res) =>{
