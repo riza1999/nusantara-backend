@@ -123,6 +123,44 @@ api.post('/getTotalScore', async (req,res) => {
     }
 })
 
+api.post('/getSoal', async (req,res) => {
+    let {id_soal} = req.body;
+
+    const doc = await db.collection("ms_soal").doc(id_soal).get();
+
+    if (!doc.exists) {
+        return res.json({
+            status: 'Soal tidak ditemukan',
+            response: {}
+        })
+    } else {
+        let hasil = doc.data();
+        let next_id_soal;
+        let prev_id_soal;
+
+        hasil.id_kategori.get().then(async resp => {
+            const kategoriRef = db.collection('ms_kategori').doc(resp.id);
+
+            const nextprevSoal = await db.collection("ms_soal").where('id_kategori','==',kategoriRef).where('ordering','in',[hasil.ordering-1,hasil.ordering+1]).get();
+
+            nextprevSoal.forEach(async doc => {
+                let nextprev = doc.data();
+                if(nextprev.ordering == hasil.ordering-1) prev_id_soal = doc.id;
+                if(nextprev.ordering == hasil.ordering+1) next_id_soal = doc.id;
+            })
+
+            return res.json({
+                image_soal: hasil.image_soal,
+                reward: hasil.reward,
+                soal: hasil.soal,
+                pilihan: hasil.pilihan,
+                next: next_id_soal,
+                prev: prev_id_soal
+            });
+        })
+    }
+})
+
 api.post('/getSoalPerkategori', async (req,res) => {
     let {uid,id_kategori} = req.body;
     let kirim = [];
