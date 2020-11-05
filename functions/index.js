@@ -123,6 +123,123 @@ api.post('/getTotalScore', async (req,res) => {
     }
 })
 
+api.post('/jawabSoal', async (req,res) => {
+    let {uid,id_soal,jawab} = req.body;
+    let info_salah = 'Jawaban kamu salah';
+    let info_benar = 'Berhasil kamu menjawab dengan benar';
+
+    const userRef = db.collection("ms_user").doc(uid);
+    const soalRef = db.collection("ms_soal").doc(id_soal);
+
+    const doc = await soalRef.get();
+
+    if(!doc.exists){
+        return res.json({
+            status: 'Soal tidak ditemukan',
+            response: {}
+        })
+    }else{
+        let hasil = doc.data();
+        let penalty = hasil.reward/4;
+        let data = {
+            id_soal: soalRef,
+            id_user: userRef
+        }
+
+        if(hasil.jawabanBenar == jawab){
+            data.reward = hasil.reward;
+            data.is_right = true;
+
+            const snapshotTRSoal = await db.collection('tr_soal').where('id_soal','==',soalRef).where('id_user','==',userRef).get();
+            const lengthTRSoal = snapshotTRSoal.size;
+            //kalo di tr_soal tidak pernah menjawab maka add new collecltion
+            if(lengthTRSoal == 0) {
+                const reg = await db.collection("tr_soal").add(data);
+
+                if (reg) {
+                    res.json({
+                        is_right: true,
+                        info: info_benar,
+                        reward: hasil.reward
+                    })
+                }
+            }else{
+                const idTRSoal = snapshotTRSoal.docs[0].id;
+                snapshotTRSoal.forEach(async doc => {
+                    let hasil = doc.data();
+
+                    //kalo di tr_soal udah is_right tidak perlu update koleksinya
+                    if(hasil.is_right){
+                        res.json({
+                            is_right: true,
+                            info: info_benar,
+                            reward: hasil.reward,
+                            repeated: true
+                        })
+                    }else{
+                        const upd = await db.collection('tr_soal').doc(idTRSoal).update({
+                            reward: hasil.reward,
+                            is_right: true
+                        })
+        
+                        if(upd) {
+                            res.json({
+                                is_right: true,
+                                info: info_benar,
+                                reward: hasil.reward
+                            })
+                        }
+                    }
+                })
+            }
+        }else{
+            data.reward = hasil.reward-penalty;
+            data.is_right = false;
+
+
+            const snapshotTRSoal = await db.collection('tr_soal').where('id_soal','==',soalRef).where('id_user','==',userRef).get();
+            const lengthTRSoal = snapshotTRSoal.size;
+            //kalo di tr_soal tidak pernah menjawab maka add new collecltion
+            if(lengthTRSoal == 0) {
+                const reg = await db.collection("tr_soal").add(data);
+
+                if (reg) {
+                    res.json({
+                        is_right: false,
+                        info: info_salah
+                    })
+                }
+            }else{
+                const idTRSoal = snapshotTRSoal.docs[0].id;
+                snapshotTRSoal.forEach(async doc => {
+                    let hasil = doc.data();
+
+                    //kalo di tr_soal udah is_right tidak perlu update koleksinya
+                    if(hasil.is_right){
+                        res.json({
+                            is_right: false,
+                            info: info_salah
+                        })
+                    }else{
+                        hasil.reward -= penalty;
+                        if(hasil.reward < 0) hasil.reward = 0;
+                        const upd = await db.collection('tr_soal').doc(idTRSoal).update({
+                            reward: hasil.reward,
+                        })
+        
+                        if(upd) {
+                            res.json({
+                                is_right: false,
+                                info: info_salah
+                            })
+                        }
+                    }
+                })
+            }
+        }
+    }
+})
+
 api.post('/getSoal', async (req,res) => {
     let {id_soal} = req.body;
 
