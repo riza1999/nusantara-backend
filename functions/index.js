@@ -367,8 +367,6 @@ api.post('/getKategori', async (req,res) =>{
             })
         }).then(() => {
             ctr++
-            console.log('lengthKategori '+lengthKategori);
-            console.log('ctr '+ctr);
             if(lengthKategori == ctr) res.json(kirim);
         })
         
@@ -417,6 +415,6 @@ api.get('/getLeaderboard', async (req,res) =>{
 
 const runtimeOpts = {
     timeoutSeconds: 60,
-    memory: '1GB'
+    memory: '2GB'
 }
 exports.api = functions.runWith(runtimeOpts).https.onRequest(api);
