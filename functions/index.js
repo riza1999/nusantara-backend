@@ -339,36 +339,39 @@ api.post('/getKategori', async (req,res) =>{
         let lengthSoal = snapshotSoal.size;
         let lengthTRSoal = 0;
         let ctr_soal = 0;    
-
-        let data = {
-            nama_kategori: nama_kategori,
-            jumlah_soal: lengthSoal,
-            kategori_id: kategori_id,
-            progress: 0
-        }
-        ctr++
-        snapshotSoal.forEach(async doc => {
-            let soalRef = db.collection('ms_soal').doc(doc.id);
-
-            const snapshotTRSoal = await db.collection("tr_soal").where('id_user', '==', userRef).where('id_soal','==',soalRef).get();
-            if(snapshotTRSoal.empty){
-                
-            }else{
-                snapshotTRSoal.forEach(async doc => {
-                    let hasilTRSoal = doc.data();
-                    
-                    if(hasilTRSoal.is_right) lengthTRSoal++
-                })
-            }
-            ctr_soal++;
-            if(lengthSoal == ctr_soal) {
-                data.progress = lengthTRSoal/lengthSoal;
-                kirim.push(data);
-                console.log('lengthKategori ' + lengthKategori);
-                console.log('ctr ' + ctr);
-                if(lengthKategori == ctr) res.json(kirim);
-            };
+        
+        new Promise(resolve => {
+            snapshotSoal.forEach(async doc => {
+                let soalRef = db.collection('ms_soal').doc(doc.id);
+    
+                const snapshotTRSoal = await db.collection("tr_soal").where('id_user', '==', userRef).where('id_soal','==',soalRef).get();
+                if(!snapshotTRSoal.empty){
+                    snapshotTRSoal.forEach(async doc => {
+                        let hasilTRSoal = doc.data();
+                        
+                        if(hasilTRSoal.is_right) lengthTRSoal++
+                    })
+                }
+                ctr_soal++;
+                if(lengthSoal == ctr_soal) {
+                    let data = {
+                        nama_kategori: nama_kategori,
+                        jumlah_soal: lengthSoal,
+                        kategori_id: kategori_id,
+                        progress: 0
+                    }
+                    data.progress = lengthTRSoal/lengthSoal;
+                    kirim.push(data);
+                    resolve();
+                };
+            })
+        }).then(() => {
+            ctr++
+            console.log('lengthKategori '+lengthKategori);
+            console.log('ctr '+ctr);
+            if(lengthKategori == ctr) res.json(kirim);
         })
+        
     })
 })
 
