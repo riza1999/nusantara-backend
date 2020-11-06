@@ -320,25 +320,53 @@ api.post('/getSoalPerkategori', async (req,res) => {
     })
 })
 
-api.get('/getKategori', async (req,res) =>{
+api.post('/getKategori', async (req,res) =>{
+    let {uid} = req.body;
+
+    const userRef = db.collection('ms_user').doc(uid);
     const snapshotKategori = await db.collection("ms_kategori").get();
+    
     let kirim = [];
     let lengthKategori = snapshotKategori.size;
     let ctr = 0;    
     snapshotKategori.forEach(async doc =>{
         let hasil = doc.data();
-        let is_done = false;
+        let nama_kategori = hasil.nama;
+        let kategori_id = doc.id;
         const kategoriRef = db.collection('ms_kategori').doc(doc.id);
         const snapshotSoal = await db.collection("ms_soal").where('id_kategori','==', kategoriRef).get();
+
         let lengthSoal = snapshotSoal.size;
-        kirim.push({
-            nama_kategori: hasil.nama,
+        let lengthTRSoal = 0;
+        let ctr_soal = 0;    
+
+        let data = {
+            nama_kategori: nama_kategori,
             jumlah_soal: lengthSoal,
-            kategori_id: doc.id,
-            is_done: is_done
+            kategori_id: kategori_id,
+            progress: 0
+        }
+        snapshotSoal.forEach(async doc => {
+            let soalRef = db.collection('ms_soal').doc(doc.id);
+
+            const snapshotTRSoal = await db.collection("tr_soal").where('id_user', '==', userRef).where('id_soal','==',soalRef).get();
+            if(snapshotTRSoal.empty){
+                
+            }else{
+                snapshotTRSoal.forEach(async doc => {
+                    let hasilTRSoal = doc.data();
+                    
+                    if(hasilTRSoal.is_right) lengthTRSoal++
+                })
+            }
+            ctr_soal++;
+            if(lengthSoal == ctr_soal) {
+                data.progress = lengthTRSoal/lengthSoal;
+                kirim.push(data)
+            };
         })
-        ctr++;
-        if(lengthKategori == ctr) res.json(kirim);
+        ctr++
+        if(lengthKategori == ctr && lengthSoal == ctr_soal) res.json(kirim);
     })
 })
 
