@@ -346,6 +346,7 @@ api.post('/getKategori', async (req,res) =>{
             kategori_id: kategori_id,
             progress: 0
         }
+        ctr++
         snapshotSoal.forEach(async doc => {
             let soalRef = db.collection('ms_soal').doc(doc.id);
 
@@ -362,11 +363,12 @@ api.post('/getKategori', async (req,res) =>{
             ctr_soal++;
             if(lengthSoal == ctr_soal) {
                 data.progress = lengthTRSoal/lengthSoal;
-                kirim.push(data)
+                kirim.push(data);
+                console.log('lengthKategori ' + lengthKategori);
+                console.log('ctr ' + ctr);
+                if(lengthKategori == ctr) res.json(kirim);
             };
         })
-        ctr++
-        if(lengthKategori == ctr && lengthSoal == ctr_soal) res.json(kirim);
     })
 })
 
@@ -410,4 +412,8 @@ api.get('/getLeaderboard', async (req,res) =>{
     })
 })
 
-exports.api = functions.https.onRequest(api);
+const runtimeOpts = {
+    timeoutSeconds: 60,
+    memory: '1GB'
+}
+exports.api = functions.runWith(runtimeOpts).https.onRequest(api);
