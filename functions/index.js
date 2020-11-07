@@ -100,26 +100,34 @@ api.post('/getTotalScore', async (req,res) => {
     let {uid} = req.body;
 
     const userRef = db.collection('ms_user').doc(uid);
-    const snapshot = await db.collection("tr_soal").where('id_user', '==', userRef).get();
+    const ada = await userRef.get();
 
-    if(snapshot.empty){
+    if(!ada.exists){
         res.json({
-            total_reward: 0
+            info: 'id_user tidak ditemukan',
+            response: {}
         })
     }else{
-        let lengthTRSoal = snapshot.size;
-        let ctr = 0;   
-        let total_reward = 0;
-        snapshot.forEach(doc =>{
-            let tr_soal = doc.data();
-            let {reward} = tr_soal;
-            
-            total_reward += reward;
-            ctr++;
-            if(lengthTRSoal == ctr) res.json({
-                total_reward: total_reward
-            });
-       })
+        const snapshot = await db.collection("tr_soal").where('id_user', '==', userRef).get();
+        if(snapshot.empty){
+            res.json({
+                total_reward: 0
+            })
+        }else{
+            let lengthTRSoal = snapshot.size;
+            let ctr = 0;   
+            let total_reward = 0;
+            snapshot.forEach(doc =>{
+                let tr_soal = doc.data();
+                let {reward} = tr_soal;
+                
+                total_reward += reward;
+                ctr++;
+                if(lengthTRSoal == ctr) res.json({
+                    total_reward: total_reward
+                });
+           })
+        }
     }
 })
 
@@ -129,112 +137,121 @@ api.post('/jawabSoal', async (req,res) => {
     let info_benar = 'Berhasil kamu menjawab dengan benar';
 
     const userRef = db.collection("ms_user").doc(uid);
-    const soalRef = db.collection("ms_soal").doc(id_soal);
+    const ada = await userRef.get();
 
-    const doc = await soalRef.get();
-
-    if(!doc.exists){
-        return res.json({
-            status: 'Soal tidak ditemukan',
+    if(!ada.exists){
+        res.json({
+            info: 'id_user tidak ditemukan',
             response: {}
         })
     }else{
-        let hasil = doc.data();
-        let penalty = hasil.reward/4;
-        let data = {
-            id_soal: soalRef,
-            id_user: userRef
-        }
+        const soalRef = db.collection("ms_soal").doc(id_soal);
 
-        if(hasil.jawabanBenar == jawab){
-            data.reward = hasil.reward;
-            data.is_right = true;
+        const doc = await soalRef.get();
 
-            const snapshotTRSoal = await db.collection('tr_soal').where('id_soal','==',soalRef).where('id_user','==',userRef).get();
-            const lengthTRSoal = snapshotTRSoal.size;
-            //kalo di tr_soal tidak pernah menjawab maka add new collecltion
-            if(lengthTRSoal == 0) {
-                const reg = await db.collection("tr_soal").add(data);
+        if(!doc.exists){
+            return res.json({
+                status: 'Soal tidak ditemukan',
+                response: {}
+            })
+        }else{
+            let hasil = doc.data();
+            let penalty = hasil.reward/4;
+            let data = {
+                id_soal: soalRef,
+                id_user: userRef
+            }
 
-                if (reg) {
-                    res.json({
-                        is_right: true,
-                        info: info_benar,
-                        reward: hasil.reward
-                    })
-                }
-            }else{
-                const idTRSoal = snapshotTRSoal.docs[0].id;
-                snapshotTRSoal.forEach(async doc => {
-                    let hasil = doc.data();
+            if(hasil.jawabanBenar == jawab){
+                data.reward = hasil.reward;
+                data.is_right = true;
 
-                    //kalo di tr_soal udah is_right tidak perlu update koleksinya
-                    if(hasil.is_right){
+                const snapshotTRSoal = await db.collection('tr_soal').where('id_soal','==',soalRef).where('id_user','==',userRef).get();
+                const lengthTRSoal = snapshotTRSoal.size;
+                //kalo di tr_soal tidak pernah menjawab maka add new collecltion
+                if(lengthTRSoal == 0) {
+                    const reg = await db.collection("tr_soal").add(data);
+
+                    if (reg) {
                         res.json({
                             is_right: true,
                             info: info_benar,
-                            reward: hasil.reward,
-                            repeated: true
+                            reward: hasil.reward
                         })
-                    }else{
-                        const upd = await db.collection('tr_soal').doc(idTRSoal).update({
-                            reward: hasil.reward,
-                            is_right: true
-                        })
-        
-                        if(upd) {
+                    }
+                }else{
+                    const idTRSoal = snapshotTRSoal.docs[0].id;
+                    snapshotTRSoal.forEach(async doc => {
+                        let hasil = doc.data();
+
+                        //kalo di tr_soal udah is_right tidak perlu update koleksinya
+                        if(hasil.is_right){
                             res.json({
                                 is_right: true,
                                 info: info_benar,
-                                reward: hasil.reward
+                                reward: hasil.reward,
+                                repeated: true
                             })
+                        }else{
+                            const upd = await db.collection('tr_soal').doc(idTRSoal).update({
+                                reward: hasil.reward,
+                                is_right: true
+                            })
+            
+                            if(upd) {
+                                res.json({
+                                    is_right: true,
+                                    info: info_benar,
+                                    reward: hasil.reward
+                                })
+                            }
                         }
-                    }
-                })
-            }
-        }else{
-            data.reward = hasil.reward-penalty;
-            data.is_right = false;
-
-
-            const snapshotTRSoal = await db.collection('tr_soal').where('id_soal','==',soalRef).where('id_user','==',userRef).get();
-            const lengthTRSoal = snapshotTRSoal.size;
-            //kalo di tr_soal tidak pernah menjawab maka add new collecltion
-            if(lengthTRSoal == 0) {
-                const reg = await db.collection("tr_soal").add(data);
-
-                if (reg) {
-                    res.json({
-                        is_right: false,
-                        info: info_salah
                     })
                 }
             }else{
-                const idTRSoal = snapshotTRSoal.docs[0].id;
-                snapshotTRSoal.forEach(async doc => {
-                    let hasil = doc.data();
+                data.reward = hasil.reward-penalty;
+                data.is_right = false;
 
-                    //kalo di tr_soal udah is_right tidak perlu update koleksinya
-                    if(hasil.is_right){
+
+                const snapshotTRSoal = await db.collection('tr_soal').where('id_soal','==',soalRef).where('id_user','==',userRef).get();
+                const lengthTRSoal = snapshotTRSoal.size;
+                //kalo di tr_soal tidak pernah menjawab maka add new collecltion
+                if(lengthTRSoal == 0) {
+                    const reg = await db.collection("tr_soal").add(data);
+
+                    if (reg) {
                         res.json({
                             is_right: false,
                             info: info_salah
                         })
-                    }else{
-                        hasil.reward -= penalty;
-                        if(hasil.reward < 0) hasil.reward = 0;
-                        const upd = await db.collection('tr_soal').doc(idTRSoal).update({
-                            reward: hasil.reward,
-                        })
-        
-                        if(upd) {
+                    }
+                }else{
+                    const idTRSoal = snapshotTRSoal.docs[0].id;
+                    snapshotTRSoal.forEach(async doc => {
+                        let hasil = doc.data();
+
+                        //kalo di tr_soal udah is_right tidak perlu update koleksinya
+                        if(hasil.is_right){
                             res.json({
                                 is_right: false,
                                 info: info_salah
                             })
+                        }else{
+                            hasil.reward -= penalty;
+                            if(hasil.reward < 0) hasil.reward = 0;
+                            const upd = await db.collection('tr_soal').doc(idTRSoal).update({
+                                reward: hasil.reward,
+                            })
+            
+                            if(upd) {
+                                res.json({
+                                    is_right: false,
+                                    info: info_salah
+                                })
+                            }
                         }
-                    }
-                })
+                    })
+                }
             }
         }
     }
@@ -283,94 +300,121 @@ api.post('/getSoalPerkategori', async (req,res) => {
     let kirim = [];
     
     const userRef = db.collection('ms_user').doc(uid)
-    const kategoriRef = db.collection('ms_kategori').doc(id_kategori);
-    const snapshotSoal = await db.collection("ms_soal").where('id_kategori','==', kategoriRef).get();
+    const adaUser = await userRef.get();
 
-    let lengthSoal = snapshotSoal.size;
-    let ctr = 0;    
-    snapshotSoal.forEach(async doc => {
-        let hasil = doc.data();
-        let is_done = false;
-        let soalRef = db.collection('ms_soal').doc(doc.id);
-
-        const snapshotTRSoal = await db.collection("tr_soal").where('id_user', '==', userRef).where('id_soal','==',soalRef).get();
-        if(snapshotTRSoal.empty){
-            kirim.push({
-                judul: 'soal ' + hasil.ordering,
-                id_soal: doc.id,
-                is_done: is_done,
-                ordering: hasil.ordering
+    if(!adaUser.exists){
+        res.json({
+            info: 'id_user tidak ditemukan',
+            response: {}
+        })
+    }else{
+        const kategoriRef = db.collection('ms_kategori').doc(id_kategori);
+        const adaKategori = await kategoriRef.get();
+        if(!adaKategori.exists){
+            res.json({
+                info: 'id_kategori tidak ditemukan',
+                response: {}
             })
         }else{
-            snapshotTRSoal.forEach(async doc => {
-                let hasilTRSoal = doc.data();
-                is_done = true;
-                kirim.push({
-                    judul: 'soal ' + hasil.ordering,
-                    id_soal: doc.id,
-                    is_done: is_done,
-                    is_right: hasilTRSoal.is_right,
-                    ordering: hasil.ordering
-                })
+            const snapshotSoal = await db.collection("ms_soal").where('id_kategori','==', kategoriRef).get();
+
+            let lengthSoal = snapshotSoal.size;
+            let ctr = 0;    
+            snapshotSoal.forEach(async doc => {
+                let hasil = doc.data();
+                let id_soal = doc.id;
+                let is_done = false;
+                let soalRef = db.collection('ms_soal').doc(doc.id);
+
+                const snapshotTRSoal = await db.collection("tr_soal").where('id_user', '==', userRef).where('id_soal','==',soalRef).get();
+                if(snapshotTRSoal.empty){
+                    kirim.push({
+                        judul: 'soal ' + hasil.ordering,
+                        id_soal: id_soal,
+                        is_done: is_done,
+                        ordering: hasil.ordering
+                    })
+                }else{
+                    snapshotTRSoal.forEach(async doc => {
+                        let hasilTRSoal = doc.data();
+                        is_done = true;
+                        kirim.push({
+                            judul: 'soal ' + hasil.ordering,
+                            id_soal: id_soal,
+                            is_done: is_done,
+                            is_right: hasilTRSoal.is_right,
+                            ordering: hasil.ordering
+                        })
+                    })
+                }
+                ctr++;
+                kirim.sort(compareOrdering);
+                if(lengthSoal == ctr) res.json(kirim);
             })
         }
-        ctr++;
-        kirim.sort(compareOrdering);
-        if(lengthSoal == ctr) res.json(kirim);
-    })
+    }
 })
 
 api.post('/getKategori', async (req,res) =>{
     let {uid} = req.body;
 
     const userRef = db.collection('ms_user').doc(uid);
-    const snapshotKategori = await db.collection("ms_kategori").get();
-    
-    let kirim = [];
-    let lengthKategori = snapshotKategori.size;
-    let ctr = 0;    
-    snapshotKategori.forEach(async doc =>{
-        let hasil = doc.data();
-        let nama_kategori = hasil.nama;
-        let kategori_id = doc.id;
-        const kategoriRef = db.collection('ms_kategori').doc(doc.id);
-        const snapshotSoal = await db.collection("ms_soal").where('id_kategori','==', kategoriRef).get();
+    const ada = await userRef.get();
 
-        let lengthSoal = snapshotSoal.size;
-        let lengthTRSoal = 0;
-        let ctr_soal = 0;    
-        
-        new Promise(resolve => {
-            snapshotSoal.forEach(async doc => {
-                let soalRef = db.collection('ms_soal').doc(doc.id);
-    
-                const snapshotTRSoal = await db.collection("tr_soal").where('id_user', '==', userRef).where('id_soal','==',soalRef).get();
-                if(!snapshotTRSoal.empty){
-                    snapshotTRSoal.forEach(async doc => {
-                        let hasilTRSoal = doc.data();
-                        
-                        if(hasilTRSoal.is_right) lengthTRSoal++
-                    })
-                }
-                ctr_soal++;
-                if(lengthSoal == ctr_soal) {
-                    let data = {
-                        nama_kategori: nama_kategori,
-                        jumlah_soal: lengthSoal,
-                        kategori_id: kategori_id,
-                        progress: 0
-                    }
-                    data.progress = lengthTRSoal/lengthSoal;
-                    kirim.push(data);
-                    resolve();
-                };
-            })
-        }).then(() => {
-            ctr++
-            if(lengthKategori == ctr) res.json(kirim);
+    if(!ada.exists){
+        res.json({
+            info: 'id_user tidak ditemukan',
+            response: {}
         })
+    }else{
+        const snapshotKategori = await db.collection("ms_kategori").get();
+    
+        let kirim = [];
+        let lengthKategori = snapshotKategori.size;
+        let ctr = 0;    
+        snapshotKategori.forEach(async doc =>{
+            let hasil = doc.data();
+            let nama_kategori = hasil.nama;
+            let kategori_id = doc.id;
+            const kategoriRef = db.collection('ms_kategori').doc(doc.id);
+            const snapshotSoal = await db.collection("ms_soal").where('id_kategori','==', kategoriRef).get();
+
+            let lengthSoal = snapshotSoal.size;
+            let lengthTRSoal = 0;
+            let ctr_soal = 0;    
+            
+            new Promise(resolve => {
+                snapshotSoal.forEach(async doc => {
+                    let soalRef = db.collection('ms_soal').doc(doc.id);
         
-    })
+                    const snapshotTRSoal = await db.collection("tr_soal").where('id_user', '==', userRef).where('id_soal','==',soalRef).get();
+                    if(!snapshotTRSoal.empty){
+                        snapshotTRSoal.forEach(async doc => {
+                            let hasilTRSoal = doc.data();
+                            
+                            if(hasilTRSoal.is_right) lengthTRSoal++
+                        })
+                    }
+                    ctr_soal++;
+                    if(lengthSoal == ctr_soal) {
+                        let data = {
+                            nama_kategori: nama_kategori,
+                            jumlah_soal: lengthSoal,
+                            kategori_id: kategori_id,
+                            progress: 0
+                        }
+                        data.progress = lengthTRSoal/lengthSoal;
+                        kirim.push(data);
+                        resolve();
+                    };
+                })
+            }).then(() => {
+                ctr++
+                if(lengthKategori == ctr) res.json(kirim);
+            })
+            
+        })
+    }
 })
 
 api.get('/getLeaderboard', async (req,res) =>{
