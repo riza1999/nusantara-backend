@@ -83,9 +83,23 @@ api.post('/register', async(req,res) => {
         const reg = await db.collection("ms_user").add(data);
 
         if (reg) {
-            res.json({
-                success: true,
-                status: 'Berhasil membuat akun'
+            const snapshotAfterReg = await db.collection("ms_user")
+                                                .where('username','==', username)
+                                                .where('password','==', password)
+                                                .get();
+            
+            const uid = snapshotAfterReg.docs[0].id;
+            snapshotAfterReg.forEach(doc =>{
+                let user = doc.data();
+                let {nama,username} = user;
+        
+                res.json({
+                    success: true,
+                    uid: uid,
+                    nama: nama,
+                    username: username,
+                    status: 'Berhasil membuat akun'
+                })
             })
         }
     }else{
@@ -316,6 +330,8 @@ api.post('/getSoalPerkategori', async (req,res) => {
                 response: {}
             })
         }else{
+            let dataKategori = adaKategori.data();
+            let nama_kategori = dataKategori.nama;
             const snapshotSoal = await db.collection("ms_soal").where('id_kategori','==', kategoriRef).get();
 
             let lengthSoal = snapshotSoal.size;
@@ -349,7 +365,10 @@ api.post('/getSoalPerkategori', async (req,res) => {
                 }
                 ctr++;
                 kirim.sort(compareOrdering);
-                if(lengthSoal == ctr) res.json(kirim);
+                if(lengthSoal == ctr) res.json({
+                    nama_kategori: nama_kategori,
+                    soal: kirim
+                });
             })
         }
     }
