@@ -68,6 +68,64 @@ api.post('/login', async (req,res) => {
    })
 })
 
+api.post('/editProfile', async (req,res) => {
+    let {image,nama,username,oldPassword,newPassword} = req.body;
+    let nameChanged = false;
+    let imageChanged = false;
+    let passwordChanged = false;
+
+    const snapshot = await db.collection("ms_user")
+                               .where('username','==', username)
+                               .where('password','==', oldPassword)
+                               .get();
+    
+    if(snapshot.empty){
+       //jika password dan email salah
+       res.json({
+          success: false,
+          info: 'password salah'
+       });
+    }
+ 
+    const uid = snapshot.docs[0].id;
+    //  ganti nama
+    if(nama && nama != ''){
+        const upd = await db.collection('ms_user').doc(uid).update({
+            nama: nama
+        })
+        nameChanged = true;
+    }
+    //  ganti image
+    if(image && image != ''){
+        const upd = await db.collection('ms_user').doc(uid).update({
+            image: image
+        })
+        imageChanged = true;
+    }
+    //  ganti image
+    if(newPassword && newPassword != ''){
+        const upd = await db.collection('ms_user').doc(uid).update({
+            password: newPassword
+        })
+        passwordChanged = true;
+    }
+
+    const newSnapshot = await db.collection("ms_user")
+                               .where('username','==', username)
+                               .get();
+
+    newSnapshot.forEach(doc =>{
+        let user = doc.data();
+        
+        res.json({
+            nameChanged: nameChanged,
+            imageChanged: imageChanged,
+            passwordChanged: passwordChanged,
+            profile: user
+        })
+    })
+ })
+
 api.post('/register', async(req,res) => {
     // const lengthUser = await db.collection("ms_user").get().size;
     let {image,nama,username,password} = req.body;
