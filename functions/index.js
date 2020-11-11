@@ -510,7 +510,7 @@ api.post('/getLeaderboard', async (req,res) =>{
 
         if(snapshot.empty){
             kirim.push({
-                username: hasil.nama,
+                nama: hasil.nama,
                 total_reward: 0,
                 its_me: its_me
             })
@@ -526,7 +526,7 @@ api.post('/getLeaderboard', async (req,res) =>{
                 ctr++;
                 if(lengthTRSoal == ctr) {
                     kirim.push({
-                        username: hasil.nama,
+                        nama: hasil.nama,
                         total_reward: total_reward,
                         its_me: its_me
                     })
