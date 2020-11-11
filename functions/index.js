@@ -494,13 +494,16 @@ api.post('/getKategori', async (req,res) =>{
     }
 })
 
-api.get('/getLeaderboard', async (req,res) =>{
+api.post('/getLeaderboard', async (req,res) =>{
+    let {id_saya} = req.body;
     const snapshotUser = await db.collection("ms_user").get();
     let kirim = [];
     let lengthUser = snapshotUser.size;
     let ctr_user = 0;    
     snapshotUser.forEach(async doc =>{
         let uid = doc.id;
+        let its_me = false;
+        if (id_saya == uid) its_me = true
         let hasil = doc.data();
         const userRef = db.collection('ms_user').doc(uid);
         const snapshot = await db.collection("tr_soal").where('id_user', '==', userRef).get();
@@ -508,7 +511,8 @@ api.get('/getLeaderboard', async (req,res) =>{
         if(snapshot.empty){
             kirim.push({
                 username: hasil.nama,
-                total_reward: 0
+                total_reward: 0,
+                its_me: its_me
             })
         }else{
             let lengthTRSoal = snapshot.size;
@@ -523,7 +527,8 @@ api.get('/getLeaderboard', async (req,res) =>{
                 if(lengthTRSoal == ctr) {
                     kirim.push({
                         username: hasil.nama,
-                        total_reward: total_reward
+                        total_reward: total_reward,
+                        its_me: its_me
                     })
                 }
            })
