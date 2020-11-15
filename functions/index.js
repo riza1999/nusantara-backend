@@ -539,8 +539,88 @@ api.post('/getLeaderboard', async (req,res) =>{
     })
 })
 
+api.get('/injectSoalBajuAdat', async (req,res) =>{
+    let id_kategori_bajuAdat = '6mW9g3kpxcpcJaiH2kky'
+    const kategoriRef = db.collection('ms_kategori').doc(id_kategori_bajuAdat);
+
+
+    const soal = await db.collection("ms_soal");
+
+    soal.add({
+        id_kategori: kategoriRef,
+        image_soal: 'https://trello-attachments.s3.amazonaws.com/5f9e67ce924ba226f0cda4f8/372x371/b1eaec77965f7ee42827220d591bb66e/Betawi.png',
+        jawabanBenar: 'DKI Jakarta',
+        ordering: 1,
+        pilihan: ['Nusa Tenggara Timur', 'Jawa Tengah', 'DKI Jakarta', 'Bali'],
+        reward: 100,
+        soal: 'Baju  adat dari provinsi manakah gambar di atas?'
+    })
+
+    soal.add({
+        id_kategori: kategoriRef,
+        image_soal: 'https://trello-attachments.s3.amazonaws.com/5f9e67ce924ba226f0cda4f8/369x369/863edfd9177aa908aa45663b5e13824d/Bali.png',
+        jawabanBenar: 'Bali',
+        ordering: 2,
+        pilihan: ['Jawa', 'Dayak', 'Bali', 'Betawi'],
+        reward: 100,
+        soal: 'Baju  adat milik suku apakah gambar di atas?'
+    })
+
+    soal.add({
+        id_kategori: kategoriRef,
+        image_soal: 'https://trello-attachments.s3.amazonaws.com/5f9e67ce924ba226f0cda4f8/375x375/1d4666c17a101b63bea212a599a019c4/Dayak.png',
+        jawabanBenar: 'Dayak',
+        ordering: 3,
+        pilihan: ['Dayak', 'Madura', 'Sunda', 'Betawi'],
+        reward: 100,
+        soal: 'Baju  adat milik suku apakah gambar di atas?'
+    })
+
+    soal.add({
+        id_kategori: kategoriRef,
+        image_soal: 'https://trello-attachments.s3.amazonaws.com/5f9e67ce924ba226f0cda4f8/370x371/bb604f8476bc7f19a9e986e1090b801f/Nusa_Tenggara_Timur.png',
+        jawabanBenar: 'Nusa Tenggara Timur',
+        ordering: 4,
+        pilihan: ['Nusa Tenggara Timur', 'Jawa Tengah', 'Jawa Timur', 'Aceh'],
+        reward: 100,
+        soal: 'Baju  adat dari provinsi manakah gambar di atas?'
+    })
+
+    soal.add({
+        id_kategori: kategoriRef,
+        image_soal: 'https://trello-attachments.s3.amazonaws.com/5f9e67ce924ba226f0cda4f8/371x371/48214f37d6435d02f44d1bacc3f76560/Yogyakarta.png',
+        jawabanBenar: 'Yogyakarta',
+        ordering: 5,
+        pilihan: ['Nusa Tenggara Timur', 'Jawa Tengah', 'DKI Jakarta', 'Yogyakarta'],
+        reward: 100,
+        soal: 'Baju  adat dari provinsi manakah gambar di atas?'
+    })
+
+    soal.add({
+        id_kategori: kategoriRef,
+        image_soal: 'https://trello-attachments.s3.amazonaws.com/5f9e67ce924ba226f0cda4f8/372x371/b1eaec77965f7ee42827220d591bb66e/Betawi.png',
+        jawabanBenar: 'Jawa',
+        ordering: 6,
+        pilihan: ['Jawa', 'Madura', 'Sunda', 'Bugis'],
+        reward: 100,
+        soal: 'Baju  adat milik suku apakah gambar di atas?'
+    })
+
+    soal.add({
+        id_kategori: kategoriRef,
+        image_soal: 'https://trello-attachments.s3.amazonaws.com/5f9e67ce924ba226f0cda4f8/371x372/973fc09946562e251ae42ac81a05148b/Madura.png',
+        jawabanBenar: 'Madura',
+        ordering: 7,
+        pilihan: ['Sunda', 'Madura', 'Minahasa', 'Asmat'],
+        reward: 100,
+        soal: 'Baju  adat milik suku apakah gambar di atas?'
+    })
+
+    res.send('masuk pak')
+})
+
 const runtimeOpts = {
     timeoutSeconds: 60,
-    memory: '2GB'
+    memory: '1GB'
 }
 exports.api = functions.runWith(runtimeOpts).https.onRequest(api);
