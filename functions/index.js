@@ -541,12 +541,35 @@ api.post('/getLeaderboard', async (req,res) =>{
 
 api.get('/injectSoalBajuAdat', async (req,res) =>{
     let id_kategori_bajuAdat = '6mW9g3kpxcpcJaiH2kky'
+    let id_kategori_pahlawan = 'EvldBozE7hm7tIxkyqvX'
+    let id_kategori_wayang = 'X6SG5ehEPo6NTUVN7nCa'
+    let id_kategori_bangunanIkonik = 'nidMry9oVqecm7lnwtab'
+
+    await db.collection('ms_kategori').doc(id_kategori_bajuAdat).set({
+        nama: 'Mengenal Baju Adat'
+    })
+
+    await db.collection('ms_kategori').doc(id_kategori_pahlawan).set({
+        nama: 'Mengenal Pahlawan'
+    })
+
+    await db.collection('ms_kategori').doc(id_kategori_wayang).set({
+        nama: 'Mengenal Tokoh Wayang'
+    })
+
+    await db.collection('ms_kategori').doc(id_kategori_bangunanIkonik).set({
+        nama: 'Mengenal Bangunan Ikonik'
+    })
+
     const kategoriRef = db.collection('ms_kategori').doc(id_kategori_bajuAdat);
+    const kategoriRefPahlawan = db.collection('ms_kategori').doc(id_kategori_pahlawan);
+    const kategoriRefWayang = db.collection('ms_kategori').doc(id_kategori_wayang);
+    const kategoriRefbangunanIkonik = db.collection('ms_kategori').doc(id_kategori_bangunanIkonik);
 
 
-    const soal = await db.collection("ms_soal");
+    const soal = db.collection("ms_soal");
 
-    soal.add({
+    await soal.add({
         id_kategori: kategoriRef,
         image_soal: 'https://trello-attachments.s3.amazonaws.com/5f9e67ce924ba226f0cda4f8/372x371/b1eaec77965f7ee42827220d591bb66e/Betawi.png',
         jawabanBenar: 'DKI Jakarta',
@@ -556,7 +579,7 @@ api.get('/injectSoalBajuAdat', async (req,res) =>{
         soal: 'Baju  adat dari provinsi manakah gambar di atas?'
     })
 
-    soal.add({
+    await soal.add({
         id_kategori: kategoriRef,
         image_soal: 'https://trello-attachments.s3.amazonaws.com/5f9e67ce924ba226f0cda4f8/369x369/863edfd9177aa908aa45663b5e13824d/Bali.png',
         jawabanBenar: 'Bali',
@@ -566,7 +589,7 @@ api.get('/injectSoalBajuAdat', async (req,res) =>{
         soal: 'Baju  adat milik suku apakah gambar di atas?'
     })
 
-    soal.add({
+    await soal.add({
         id_kategori: kategoriRef,
         image_soal: 'https://trello-attachments.s3.amazonaws.com/5f9e67ce924ba226f0cda4f8/375x375/1d4666c17a101b63bea212a599a019c4/Dayak.png',
         jawabanBenar: 'Dayak',
@@ -576,7 +599,7 @@ api.get('/injectSoalBajuAdat', async (req,res) =>{
         soal: 'Baju  adat milik suku apakah gambar di atas?'
     })
 
-    soal.add({
+    await soal.add({
         id_kategori: kategoriRef,
         image_soal: 'https://trello-attachments.s3.amazonaws.com/5f9e67ce924ba226f0cda4f8/370x371/bb604f8476bc7f19a9e986e1090b801f/Nusa_Tenggara_Timur.png',
         jawabanBenar: 'Nusa Tenggara Timur',
@@ -586,7 +609,7 @@ api.get('/injectSoalBajuAdat', async (req,res) =>{
         soal: 'Baju  adat dari provinsi manakah gambar di atas?'
     })
 
-    soal.add({
+    await soal.add({
         id_kategori: kategoriRef,
         image_soal: 'https://trello-attachments.s3.amazonaws.com/5f9e67ce924ba226f0cda4f8/371x371/48214f37d6435d02f44d1bacc3f76560/Yogyakarta.png',
         jawabanBenar: 'Yogyakarta',
@@ -596,7 +619,7 @@ api.get('/injectSoalBajuAdat', async (req,res) =>{
         soal: 'Baju  adat dari provinsi manakah gambar di atas?'
     })
 
-    soal.add({
+    await soal.add({
         id_kategori: kategoriRef,
         image_soal: 'https://trello-attachments.s3.amazonaws.com/5f9e67ce924ba226f0cda4f8/372x371/b1eaec77965f7ee42827220d591bb66e/Betawi.png',
         jawabanBenar: 'Jawa',
@@ -606,8 +629,8 @@ api.get('/injectSoalBajuAdat', async (req,res) =>{
         soal: 'Baju  adat milik suku apakah gambar di atas?'
     })
 
-    soal.add({
-        id_kategori: kategoriRef,
+    await soal.add({
+        id_kategori: kategoriRefPahlawan,
         image_soal: 'https://trello-attachments.s3.amazonaws.com/5f9e67ce924ba226f0cda4f8/371x372/973fc09946562e251ae42ac81a05148b/Madura.png',
         jawabanBenar: 'Madura',
         ordering: 7,
@@ -615,6 +638,28 @@ api.get('/injectSoalBajuAdat', async (req,res) =>{
         reward: 100,
         soal: 'Baju  adat milik suku apakah gambar di atas?'
     })
+
+    await soal.add({
+        id_kategori: kategoriRefWayang,
+        image_soal: 'https://trello-attachments.s3.amazonaws.com/5f9e67ce924ba226f0cda4f8/371x372/973fc09946562e251ae42ac81a05148b/Madura.png',
+        jawabanBenar: 'Madura',
+        ordering: 7,
+        pilihan: ['Sunda', 'Madura', 'Minahasa', 'Asmat'],
+        reward: 100,
+        soal: 'Baju  adat milik suku apakah gambar di atas?'
+    })
+
+    await soal.add({
+        id_kategori: kategoriRefbangunanIkonik,
+        image_soal: 'https://trello-attachments.s3.amazonaws.com/5f9e67ce924ba226f0cda4f8/371x372/973fc09946562e251ae42ac81a05148b/Madura.png',
+        jawabanBenar: 'Madura',
+        ordering: 7,
+        pilihan: ['Sunda', 'Madura', 'Minahasa', 'Asmat'],
+        reward: 100,
+        soal: 'Baju  adat milik suku apakah gambar di atas?'
+    })
+
+
 
     res.send('masuk pak')
 })
