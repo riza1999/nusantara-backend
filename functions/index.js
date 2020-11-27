@@ -57,13 +57,14 @@ api.post('/login', async (req,res) => {
    const uid = snapshot.docs[0].id;
    snapshot.forEach(doc =>{
         let user = doc.data();
-        let {nama,username} = user;
+        let {nama,username,image} = user;
 
         res.json({
             success: true,
             uid: uid,
             nama: nama,
-            username: username
+            username: username,
+            image: image
         })
    })
 })
