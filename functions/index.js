@@ -95,7 +95,7 @@ api.post('/editProfile', async (req,res) => {
         imageChanged = true;
     }
     //  ganti image
-    if(newPassword && newPassword != ''){
+    if(newPassword && newPassword != '' && newPassword != 'd41d8cd98f00b204e9800998ecf8427e'){
         const upd = await db.collection('ms_user').doc(uid).update({
             password: newPassword
         })
