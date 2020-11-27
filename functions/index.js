@@ -70,23 +70,14 @@ api.post('/login', async (req,res) => {
 })
 
 api.post('/editProfile', async (req,res) => {
-    let {image,nama,username,oldPassword,newPassword} = req.body;
+    let {image,nama,username,newPassword} = req.body;
     let nameChanged = false;
     let imageChanged = false;
     let passwordChanged = false;
 
     const snapshot = await db.collection("ms_user")
                                .where('username','==', username)
-                               .where('password','==', oldPassword)
                                .get();
-    
-    if(snapshot.empty){
-       //jika password dan email salah
-       res.json({
-          success: false,
-          info: 'password salah'
-       });
-    }
  
     const uid = snapshot.docs[0].id;
     //  ganti nama
