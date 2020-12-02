@@ -12,6 +12,19 @@ api.use(cors);
 api.use(bodyParser.json());
 api.use(bodyParser.urlencoded({ extended: true }));
 
+function compareNamaKategori(a,b){
+    const testA = a.nama;
+    const testB = b.nama;
+
+    let comparison = 0;
+    if (testA > testB) {
+        comparison = -1;
+    } else if (testA < testB) {
+        comparison = 1;
+    }
+    return comparison;
+}
+
 function compare(a, b) {
     const testA = a.total_reward;
     const testB = b.total_reward;
@@ -479,7 +492,10 @@ api.post('/getKategori', async (req,res) =>{
                 })
             }).then(() => {
                 ctr++
-                if(lengthKategori == ctr) res.json(kirim);
+                if(lengthKategori == ctr) {
+                    kirim.sort(compareNamaKategori);
+                    res.json(kirim)
+                };
             })
             
         })
@@ -566,7 +582,7 @@ api.get('/injectSoalBajuAdat', async (req,res) =>{
         image_soal: 'https://trello-attachments.s3.amazonaws.com/5f9e67ce924ba226f0cda4f8/372x371/b1eaec77965f7ee42827220d591bb66e/Betawi.png',
         jawabanBenar: 'DKI Jakarta',
         ordering: 1,
-        pilihan: ['Nusa Tenggara Timur', 'Jawa Tengah', 'DKI Jakarta', 'Bali'],
+        pilihan: ['NTT', 'Jawa Tengah', 'DKI Jakarta', 'Bali'],
         reward: 100,
         soal: 'Baju  adat dari provinsi manakah gambar di atas?'
     })
@@ -594,9 +610,9 @@ api.get('/injectSoalBajuAdat', async (req,res) =>{
     await soal.add({
         id_kategori: kategoriRef,
         image_soal: 'https://trello-attachments.s3.amazonaws.com/5f9e67ce924ba226f0cda4f8/370x371/bb604f8476bc7f19a9e986e1090b801f/Nusa_Tenggara_Timur.png',
-        jawabanBenar: 'Nusa Tenggara Timur',
+        jawabanBenar: 'NTT',
         ordering: 4,
-        pilihan: ['Nusa Tenggara Timur', 'Jawa Tengah', 'Jawa Timur', 'Aceh'],
+        pilihan: ['NTT', 'Jawa Tengah', 'Jawa Timur', 'Aceh'],
         reward: 100,
         soal: 'Baju  adat dari provinsi manakah gambar di atas?'
     })
@@ -606,14 +622,14 @@ api.get('/injectSoalBajuAdat', async (req,res) =>{
         image_soal: 'https://trello-attachments.s3.amazonaws.com/5f9e67ce924ba226f0cda4f8/371x371/48214f37d6435d02f44d1bacc3f76560/Yogyakarta.png',
         jawabanBenar: 'Yogyakarta',
         ordering: 5,
-        pilihan: ['Nusa Tenggara Timur', 'Jawa Tengah', 'DKI Jakarta', 'Yogyakarta'],
+        pilihan: ['NTT', 'Jawa Tengah', 'DKI Jakarta', 'Yogyakarta'],
         reward: 100,
         soal: 'Baju  adat dari provinsi manakah gambar di atas?'
     })
 
     await soal.add({
         id_kategori: kategoriRef,
-        image_soal: 'https://trello-attachments.s3.amazonaws.com/5f9e67ce924ba226f0cda4f8/372x371/b1eaec77965f7ee42827220d591bb66e/Betawi.png',
+        image_soal: 'https://trello-attachments.s3.amazonaws.com/5f9e67ce924ba226f0cda4f8/370x368/69cf874aa1396d4522e6c413125446f6/Jawa.png',
         jawabanBenar: 'Jawa',
         ordering: 6,
         pilihan: ['Jawa', 'Madura', 'Sunda', 'Bugis'],
@@ -622,13 +638,143 @@ api.get('/injectSoalBajuAdat', async (req,res) =>{
     })
 
     await soal.add({
-        id_kategori: kategoriRefPahlawan,
+        id_kategori: kategoriRef,
         image_soal: 'https://trello-attachments.s3.amazonaws.com/5f9e67ce924ba226f0cda4f8/371x372/973fc09946562e251ae42ac81a05148b/Madura.png',
         jawabanBenar: 'Madura',
         ordering: 7,
         pilihan: ['Sunda', 'Madura', 'Minahasa', 'Asmat'],
         reward: 100,
         soal: 'Baju  adat milik suku apakah gambar di atas?'
+    })
+
+    await soal.add({
+        id_kategori: kategoriRefWayang,
+        image_soal: 'https://trello-attachments.s3.amazonaws.com/5f9e6d095f8e9f6b6605392b/262x320/f8885997caed308e18225c3a59bcb67b/Yudhistira.png',
+        jawabanBenar: 'Yudhistira',
+        ordering: 1,
+        pilihan: ['Bima', 'Sadewa', 'Yudhistira', 'Arjuna'],
+        reward: 100,
+        soal: 'Tokoh wayang di atas merupakan anak tertua dari Pandawa, siapakah dia?'
+    })
+
+    await soal.add({
+        id_kategori: kategoriRefWayang,
+        image_soal: 'https://trello-attachments.s3.amazonaws.com/5f9e6d095f8e9f6b6605392b/291x339/47fcc4c3d46b33c6de280ad1491e1304/Bima.png',
+        jawabanBenar: 'Bima',
+        ordering: 2,
+        pilihan: ['Bima', 'Sadewa', 'Yudhistira', 'Arjuna'],
+        reward: 100,
+        soal: 'Tokoh wayang di atas merupakan yang terkuat dari semua Pandawa, siapakah dia?'
+    })
+
+    await soal.add({
+        id_kategori: kategoriRefWayang,
+        image_soal: 'https://trello-attachments.s3.amazonaws.com/5f9e6d095f8e9f6b6605392b/229x353/d5f39c4a56d1d9529e3194fbb14cbfdb/Sadewa.png',
+        jawabanBenar: 'Sadewa',
+        ordering: 3,
+        pilihan: ['Gareng', 'Petruk', 'Arjuna', 'Sadewa'],
+        reward: 100,
+        soal: 'Tokoh wayang di atas merupakan anak bungsu dari Pandawa, siapakah dia?'
+    })
+
+    await soal.add({
+        id_kategori: kategoriRefWayang,
+        image_soal: 'https://trello-attachments.s3.amazonaws.com/5f9e6d095f8e9f6b6605392b/308x352/13a1d33dadfbb1fb25a25efed42f1410/Arjuna.png',
+        jawabanBenar: 'Arjuna',
+        ordering: 4,
+        pilihan: ['Arjuna', 'Puntadewa', 'Werkudara', 'Nakula'],
+        reward: 100,
+        soal: 'Tokoh wayang di atas merupakan yang tertampan di antara semua Pandawa, siapakah dia?'
+    })
+
+    await soal.add({
+        id_kategori: kategoriRefWayang,
+        image_soal: 'https://trello-attachments.s3.amazonaws.com/5f9e6d095f8e9f6b6605392b/265x345/ace6f3e4abb31c129c81aca3fc9885bc/Nakula.png',
+        jawabanBenar: 'Nakula',
+        ordering: 5,
+        pilihan: ['Arjuna', 'Nakula', 'Bima', 'Yudhistira'],
+        reward: 100,
+        soal: 'Tokoh wayang di atas merupakan saudara kembar dari Sadewa, siapakah dia?'
+    })
+
+    await soal.add({
+        id_kategori: kategoriRefbangunanIkonik,
+        image_soal: 'https://trello-attachments.s3.amazonaws.com/5f9e68b435feb51e7340944c/290x289/454af8b73676fd15ffea95f110f0055a/Padang.png',
+        jawabanBenar: 'Jam Gadang',
+        ordering: 1,
+        pilihan: ['Jam Gadang', 'Rumah Gadang', 'Joglo', 'Tugu Muda'],
+        reward: 100,
+        soal: 'Apakah nama bangunan di atas?'
+    })
+
+    await soal.add({
+        id_kategori: kategoriRefbangunanIkonik,
+        image_soal: 'https://trello-attachments.s3.amazonaws.com/5f9e68b435feb51e7340944c/311x277/1d166a0c67313d81ffb7bed227959e38/Surabaya.png',
+        jawabanBenar: 'Surabaya',
+        ordering: 2,
+        pilihan: ['Semarang', 'Yogyakarta', 'Surabaya', 'Jakarta'],
+        reward: 100,
+        soal: 'Bangunan ikonik dari kota manakah gambar di atas?'
+    })
+
+    await soal.add({
+        id_kategori: kategoriRefbangunanIkonik,
+        image_soal: 'https://trello-attachments.s3.amazonaws.com/5f9e68b435feb51e7340944c/279x287/886fd98086686b13795252cff10e8309/Manokwari.png',
+        jawabanBenar: 'Manokwari',
+        ordering: 3,
+        pilihan: ['Jambi', 'Manokwari', 'Aceh', 'Surabaya'],
+        reward: 100,
+        soal: 'Bangunan ikonik dari kota manakah gambar di atas?'
+    })
+
+    await soal.add({
+        id_kategori: kategoriRefPahlawan,
+        image_soal: 'https://trello-attachments.s3.amazonaws.com/5f9e67c9c6cfc05ac43014a9/370x370/99e639ee7fc7ac2e80232ed198143c51/Ki_Hajar_Dewantara.png',
+        jawabanBenar: 'Ki Hajar Dewantara',
+        ordering: 1,
+        pilihan: ['Soetomo', 'Soekarno', 'Ki Hajar Dewantara', 'Muh. Yamin'],
+        reward: 100,
+        soal: 'Tokoh di atas merupakan tokoh di balik hari pendidikan nasional. Siapakah beliau?'
+    })
+
+    await soal.add({
+        id_kategori: kategoriRefPahlawan,
+        image_soal: 'https://trello-attachments.s3.amazonaws.com/5f9e67c9c6cfc05ac43014a9/370x370/b98190ebc52b10dac5602702203642b6/Sokarno.png',
+        jawabanBenar: 'Soekarno',
+        ordering: 2,
+        pilihan: ['Soekarno', 'Soetomo', 'WR Supratman', 'Soeharto'],
+        reward: 100,
+        soal: 'Tokoh di atas merupakan "Bapak Proklamasi" Indonesia, siapakah beliau?'
+    })
+
+    await soal.add({
+        id_kategori: kategoriRefPahlawan,
+        image_soal: 'https://trello-attachments.s3.amazonaws.com/5f9e67c9c6cfc05ac43014a9/370x370/12be1693edbb13089328615980f9784e/Kartini.png',
+        jawabanBenar: 'Kartini',
+        ordering: 3,
+        pilihan: ['Fatmawati', 'Kartini', 'Megawati', 'Dewi Sartika'],
+        reward: 100,
+        soal: 'Tokoh di atas mempelopori gerakan emansipasi wanita, siapakah beliau?'
+    })
+
+    await soal.add({
+        id_kategori: kategoriRefPahlawan,
+        image_soal: 'https://trello-attachments.s3.amazonaws.com/5f9e67c9c6cfc05ac43014a9/370x370/276bd4aac334f8cdf6c4b23901b2b161/Moh_Yamin.png',
+        jawabanBenar: 'Muh. Yamin',
+        ordering: 4,
+        pilihan: ['Muh. Hatta', 'Bung Tomo', 'Muh. Yamin', 'Soekarno'],
+        reward: 100,
+        soal: 'Tokoh di atas merupakan "Bapak Soneta" Indonesia, siapakah beliau?'
+    })
+
+    await soal.add({
+        id_kategori: kategoriRefPahlawan,
+        image_soal: 'https://trello-attachments.s3.amazonaws.com/5f9e67c9c6cfc05ac43014a9/370x370/1bb6c8a671f9d766a8952560b5ee0d69/Bung_Tomo.png',
+        jawabanBenar: 'Bung Tomo',
+        ordering: 5,
+        pilihan: ['Bung Tomo', 'Bung Hatta', 'Soedirman', 'Sutan Syahrir'],
+        reward: 100,
+        soal: 'Tokoh di atas terkenal dengan jargon "Merdeka atau Mati". Siapakah beliau?'
     })
 
     res.send('masuk pak')
@@ -638,22 +784,25 @@ api.get('/injectSoalWayang', async (req,res) =>{
     let id_kategori_wayang = 'X6SG5ehEPo6NTUVN7nCa'
 
     // await db.collection('ms_kategori').doc(id_kategori_bajuAdat).set({
-    //     nama: 'Mengenal Baju Adat'
+    //     nama: 'Baju Adat'
     // })
 
     // await db.collection('ms_kategori').doc(id_kategori_pahlawan).set({
-    //     nama: 'Mengenal Pahlawan'
+    //     nama: 'Pahlawan'
     // })
 
     // await db.collection('ms_kategori').doc(id_kategori_wayang).set({
-    //     nama: 'Mengenal Tokoh Wayang'
+    //     nama: 'Tokoh Wayang'
     // })
 
     // await db.collection('ms_kategori').doc(id_kategori_bangunanIkonik).set({
-    //     nama: 'Mengenal Bangunan Ikonik'
+    //     nama: 'Bangunan Ikonik'
     // })
 
     const kategoriRef = db.collection('ms_kategori').doc(id_kategori_wayang);
+    const pahlawanRef = db.collection('ms_kategori').doc(id_kategori_pahlawan);
+    const bajuAdatRef = db.collection('ms_kategori').doc(id_kategori_bajuAdat);
+    const bangunanIkonikRef = db.collection('ms_kategori').doc(id_kategori_bangunanIkonik);
 
     const soal = db.collection("ms_soal");
 
@@ -662,7 +811,7 @@ api.get('/injectSoalWayang', async (req,res) =>{
         image_soal: 'https://trello-attachments.s3.amazonaws.com/5f9e6d095f8e9f6b6605392b/262x320/f8885997caed308e18225c3a59bcb67b/Yudhistira.png',
         jawabanBenar: 'Yudhistira',
         ordering: 1,
-        pilihan: ['Bima', 'Bima', 'Yudhistira', 'Arjuna'],
+        pilihan: ['Bima', 'Sadewa', 'Yudhistira', 'Arjuna'],
         reward: 100,
         soal: 'Tokoh wayang di atas merupakan anak tertua dari Pandawa, siapakah dia?'
     })
@@ -672,7 +821,7 @@ api.get('/injectSoalWayang', async (req,res) =>{
         image_soal: 'https://trello-attachments.s3.amazonaws.com/5f9e6d095f8e9f6b6605392b/291x339/47fcc4c3d46b33c6de280ad1491e1304/Bima.png',
         jawabanBenar: 'Bima',
         ordering: 2,
-        pilihan: ['Bima', 'Sadewa', 'Yudhistira', 'Yudhistira'],
+        pilihan: ['Bima', 'Sadewa', 'Yudhistira', 'Arjuna'],
         reward: 100,
         soal: 'Tokoh wayang di atas merupakan yang terkuat dari semua Pandawa, siapakah dia?'
     })
